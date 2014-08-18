@@ -155,7 +155,13 @@ def build_ddocs_py(basedir=None, with_src=True):
         dest_prefix = join(basedir, *dest_common_path)
 
     ddocs_prefix = join(prefix, 'ddocs')
+    ddoc_filename = join(dest_prefix, "ddocs.py")
     ddocs = {}
+
+    if not isdir(ddocs_prefix) and isfile(ddoc_filename):
+        # skip ddocs generation as ddocs.py already exists
+        print "Using design docs in %s" % ddoc_filename
+        return
 
     # design docs are represented by subdirectories of `ddocs_prefix`
     for ddoc in [f for f in listdir(ddocs_prefix)
@@ -205,13 +211,12 @@ def build_ddocs_py(basedir=None, with_src=True):
                         except IOError:
                             pass
     # write file containing design docs strings
-    ddoc_filename = "ddocs.py"
-    with open(join(dest_prefix, ddoc_filename), 'w') as f:
+    with open(ddoc_filename, 'w') as f:
         for ddoc in ddocs:
             f.write(
                 "%s = '%s'\n" %
                 (ddoc, binascii.b2a_base64(json.dumps(ddocs[ddoc]))[:-1]))
-    print "Wrote design docs in %s" % (dest_prefix + '/' + ddoc_filename,)
+    print "Wrote design docs in %s" % ddoc_filename
 
 
 from setuptools.command.develop import develop as _cmd_develop
